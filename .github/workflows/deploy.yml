@@ -1,0 +1,27 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Copy files to VM
+      run: |
+        scp -o StrictHostKeyChecking=no -r * azureuser@13.95.22.12:/home/azureuser/flask-hello-world/
+
+    - name: Restart Flask service
+      run: |
+        ssh -o StrictHostKeyChecking=no azureuser@13.95.22.12 "sudo systemctl restart flaskapp"
